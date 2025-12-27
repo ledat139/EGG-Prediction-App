@@ -1,9 +1,11 @@
 import streamlit as st
+import os
 import base64
 import pandas as pd
 from preprocess.load_eeg import load_eeg
-from visualize.plot_raw import plot_raw_eeg
+from visualize.visualize import plot_raw_eeg, plot_cwt_grid
 from inference.predict import predict_with_voting
+import tempfile
 
 # ================= CONFIG =================
 st.set_page_config(layout="wide")
@@ -14,7 +16,8 @@ def load_logo(path):
         return base64.b64encode(f.read()).decode()
 
 logo = load_logo("assets/uit_is_logo.png")
-
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 # ================= CSS =================
 st.markdown("""
 <style>
@@ -177,14 +180,25 @@ with tab_upload:
         st.markdown('</div>', unsafe_allow_html=True)
 
     if uploaded:
-        st.markdown('<div class="section">', unsafe_allow_html=True)
-        st.subheader("Thông tin dữ liệu")
+        # Lấy tên file gốc
+        file_name = uploaded.name
+        save_path = os.path.join(UPLOAD_DIR, file_name)
 
-        # Demo table
+        # Lưu file vào thư mục uploads
+        with open(save_path, "wb") as f:
+            f.write(uploaded.getbuffer())
 
-        st.subheader("Trực quan hóa tín hiệu EEG")
-        eeg = load_eeg(uploaded)
-        plot_raw_eeg(eeg)
+        with st.spinner("Đang xử lý raw EEG..."):
+            segments, raw_data, preview_cwt = load_eeg(
+                save_path,
+                n_jobs=-1   # dùng toàn bộ CPU
+            )
+
+        st.subheader("EEG thô")
+        plot_raw_eeg(raw_data)
+
+        st.subheader("CWT preview (segment đầu)")
+        plot_cwt_grid(preview_cwt)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -204,14 +218,13 @@ with tab_predict:
         )
 
     model_family = model_type
-
     predict_btn = st.button("Dự đoán")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
     if predict_btn:
         with st.spinner("Đang thực hiện ensemble voting..."):
-            label, _ = predict_with_voting(eeg, model_family)
+            label, _ = predict_with_voting(segments, model_family)
 
         st.markdown('<div class="big-result">', unsafe_allow_html=True)
         st.markdown(f"""
