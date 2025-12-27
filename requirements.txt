@@ -1,0 +1,10 @@
+streamlit
+pandas
+matplotlib
+numpy
+torch
+torchvision
+mne
+pywt
+scikit-image
+joblib
