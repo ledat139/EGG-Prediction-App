@@ -1,12 +1,6 @@
 import torch
 import numpy as np
 from inference.loader import load_models
-import gc
-CLASS_MAP = {0: "A", 1: "F", 2: "C"}
-
-import torch
-import numpy as np
-from inference.loader import load_models
 
 CLASS_MAP = {0: "A", 1: "F", 2: "C"}
 

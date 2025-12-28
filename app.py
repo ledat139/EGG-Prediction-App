@@ -7,6 +7,11 @@ from visualize.visualize import plot_raw_eeg, plot_cwt_grid
 from inference.predict import predict_with_voting
 import tempfile
 
+CLASS_MAP = {
+    "A": "Bệnh Alzheimer",
+    "F": "Sa sút trí tuệ thùy trán - thái dương",
+    "C": "Người khỏe mạnh"
+}
 # ================= CONFIG =================
 st.set_page_config(layout="wide")
 
@@ -38,7 +43,7 @@ body {
     align-items: center;
     background: #ffffff;
     padding: 12px 24px;
-    margin-top: 50px;
+    margin-top: 35px;
     border-bottom: 4px solid #2f80ed;
 }
 
@@ -193,12 +198,12 @@ with tab_upload:
                 save_path,
                 n_jobs=-1   # dùng toàn bộ CPU
             )
-
+        ch_names = raw_data.info["ch_names"]
         st.subheader("EEG thô")
-        plot_raw_eeg(raw_data)
+        plot_raw_eeg(raw_data.get_data(), ch_names=ch_names)
 
         st.subheader("CWT preview (segment đầu)")
-        plot_cwt_grid(preview_cwt)
+        plot_cwt_grid(preview_cwt, ch_names=ch_names)
         st.session_state.segments = segments
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -240,13 +245,13 @@ with tab_predict:
                 result = predict_with_voting(segments, model_family)
 
             label = result["final_vote"]
-
+            label_name = CLASS_MAP.get(label, label)
             # ================= KẾT QUẢ CUỐI =================
             st.markdown('<div class="big-result">', unsafe_allow_html=True)
             st.markdown(
                 f"""
                 <div class="result-box" style="text-align:center;">
-                    KẾT QUẢ DỰ ĐOÁN CUỐI CÙNG: <b>{label}</b>
+                    KẾT QUẢ DỰ ĐOÁN CUỐI CÙNG: <b>{label_name}</b>
                 </div>
                 """,
                 unsafe_allow_html=True,

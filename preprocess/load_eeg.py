@@ -53,9 +53,9 @@ def load_eeg(
     - Preview + Predict dùng chung kết quả
     - Multicore theo channel
     """
-
     raw = mne.io.read_raw_eeglab(eeg_set_path, preload=True, verbose=False)
     data = raw.get_data()
+    ch_names = raw.info["ch_names"]  # Lấy tên kênh
     n_channels, n_samples = data.shape
 
     overlap_step = int(SEGMENT_LENGTH * (1 - overlap_ratio))
@@ -81,8 +81,8 @@ def load_eeg(
         if resize_for_model:
             channel_specs = [
                 resize(
-                    Sxx, (65, 224),
-                    order=1,              # nhanh hơn order=3
+                    Sxx, (CWT_N_FREQS, 224),
+                    order=1,
                     mode="reflect",
                     anti_aliasing=True
                 ).astype(np.float32)
@@ -101,8 +101,6 @@ def load_eeg(
 
     segments = np.stack(segments)
 
-    del raw
-    gc.collect()
+    return segments, raw, preview_cwt 
 
-    return segments, data, preview_cwt
 
