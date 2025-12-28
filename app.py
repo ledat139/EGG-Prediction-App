@@ -208,28 +208,91 @@ with tab_upload:
 with tab_predict:
     st.markdown('<div class="section">', unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 2])
 
     with col1:
         st.subheader("Chọn model")
-        model_type = st.radio(
-            "",
-            ["CNN", "Vision Transformer", "ResNet-18", "EEGConvNeXt", "CNN + ViT", "ResNet-18 + ViT", "EEGConvNeXt + ViT"]
+        model_family = st.radio(
+            "Loại mô hình",
+            [
+                "CNN",
+                "Vision Transformer",
+                "ResNet-18",
+                "EEGConvNeXt",
+                "CNN + ViT",
+                "ResNet-18 + ViT",
+                "EEGConvNeXt + ViT"
+            ],
+            label_visibility="visible"
         )
+        predict_btn = st.button("Dự đoán")
+    with col2:
+        if predict_btn:
+            with st.spinner("Đang thực hiện ensemble voting..."):
+                result = predict_with_voting(segments, model_family)
+                label = result["final_vote"]
 
-    model_family = model_type
-    predict_btn = st.button("Dự đoán")
+            # ================= KẾT QUẢ CUỐI =================
+            st.markdown('<div class="big-result">', unsafe_allow_html=True)
+            st.markdown(
+                f"""
+                <div class="result-box" style="text-align:center;">
+                    KẾT QUẢ DỰ ĐOÁN CUỐI CÙNG: <b>{label}</b>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            st.markdown('</div>', unsafe_allow_html=True)
+
+            # ================= SEGMENT-LEVEL =================
+            st.subheader("Segment-level prediction per model")
+
+            table_rows = []
+
+            for model_name, info in result["model_votes"].items():
+                row = {"Model": model_name}
+                for cls in ["A", "F", "C"]:
+                    row[cls] = info["segment_counts"].get(cls, 0)
+                row["Total segments"] = sum(row[c] for c in ["A", "F", "C"])
+                table_rows.append(row)
+
+            df_segments = pd.DataFrame(table_rows)
+
+            if not df_segments.empty:
+                st.dataframe(df_segments, use_container_width=True)
+            else:
+                st.warning("Không có dữ liệu segment để hiển thị.")
+
+            # ================= MODEL-LEVEL =================
+            st.subheader("Model-level voting")
+
+            model_votes = []
+
+            for model_name, info in result["model_votes"].items():
+                vote = info["model_vote"]
+                model_votes.append(vote)
+                st.markdown(f"- **{model_name}** → dự đoán **{vote}**")
+
+            # ================= ENSEMBLE SUMMARY =================
+            st.subheader("Ensemble voting summary")
+
+            if model_votes:
+                ensemble_count = pd.Series(model_votes).value_counts().reset_index()
+                ensemble_count.columns = ["Class", "Number of models"]
+
+                st.dataframe(ensemble_count, use_container_width=True)
+
+                final_class = ensemble_count.iloc[0]["Class"]
+                final_votes = ensemble_count.iloc[0]["Number of models"]
+
+                st.success(
+                    f"Kết luận: lớp **{final_class}** được chọn với **{final_votes} / {len(model_votes)} model**"
+                )
+            else:
+                st.warning("Không có model vote để ensemble.")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if predict_btn:
-        with st.spinner("Đang thực hiện ensemble voting..."):
-            label, _ = predict_with_voting(segments, model_family)
+    
 
-        st.markdown('<div class="big-result">', unsafe_allow_html=True)
-        st.markdown(f"""
-                        <div class="result-box" style="text-align:center;">
-                            KẾT QUẢ DỰ ĐOÁN: {label}
-                        </div>
-                        """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+
