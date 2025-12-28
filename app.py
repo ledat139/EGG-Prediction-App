@@ -199,7 +199,7 @@ with tab_upload:
 
         st.subheader("CWT preview (segment đầu)")
         plot_cwt_grid(preview_cwt)
-
+        st.session_state.segments = segments
         st.markdown('</div>', unsafe_allow_html=True)
 
 # =====================================================
@@ -221,16 +221,25 @@ with tab_predict:
                 "EEGConvNeXt",
                 "CNN + ViT",
                 "ResNet-18 + ViT",
-                "EEGConvNeXt + ViT"
+                "EEGConvNeXt + ViT",
             ],
-            label_visibility="visible"
         )
+
         predict_btn = st.button("Dự đoán")
+
     with col2:
         if predict_btn:
+            # ====== CHECK SEGMENTS ======
+            if "segments" not in st.session_state or st.session_state.segments is None:
+                st.error("Chưa có dữ liệu EEG. Vui lòng upload và preprocess trước.")
+                st.stop()
+
+            segments = st.session_state.segments
+
             with st.spinner("Đang thực hiện ensemble voting..."):
                 result = predict_with_voting(segments, model_family)
-                label = result["final_vote"]
+
+            label = result["final_vote"]
 
             # ================= KẾT QUẢ CUỐI =================
             st.markdown('<div class="big-result">', unsafe_allow_html=True)
@@ -240,7 +249,7 @@ with tab_predict:
                     KẾT QUẢ DỰ ĐOÁN CUỐI CÙNG: <b>{label}</b>
                 </div>
                 """,
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
             st.markdown('</div>', unsafe_allow_html=True)
 
@@ -277,21 +286,25 @@ with tab_predict:
             st.subheader("Ensemble voting summary")
 
             if model_votes:
-                ensemble_count = pd.Series(model_votes).value_counts().reset_index()
+                ensemble_count = (
+                    pd.Series(model_votes)
+                    .value_counts()
+                    .reset_index()
+                )
                 ensemble_count.columns = ["Class", "Number of models"]
 
                 st.dataframe(ensemble_count, use_container_width=True)
 
-                final_class = ensemble_count.iloc[0]["Class"]
                 final_votes = ensemble_count.iloc[0]["Number of models"]
 
                 st.success(
-                    f"Kết luận: lớp **{final_class}** được chọn với **{final_votes} / {len(model_votes)} model**"
+                    f"Kết luận: lớp **{label}** được chọn với **{final_votes} / {len(model_votes)} model**"
                 )
             else:
                 st.warning("Không có model vote để ensemble.")
 
     st.markdown('</div>', unsafe_allow_html=True)
+
 
     
 
