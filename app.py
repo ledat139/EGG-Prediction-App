@@ -38,7 +38,7 @@ body {
     align-items: center;
     background: #ffffff;
     padding: 12px 24px;
-    margin-top: 12px;
+    margin-top: 50px;
     border-bottom: 4px solid #2f80ed;
 }
 
