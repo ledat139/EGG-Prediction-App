@@ -33,7 +33,7 @@ body {
 }
 
 .block-container {
-    padding-top: 70px;
+    padding-top: 30px;
     padding-bottom: 60px;
 }
 
