@@ -33,20 +33,36 @@ body {
 }
 
 .block-container {
-    padding-top: 0.5rem;
+    padding-top: 70px;
+    padding-bottom: 60px;
 }
 
 /* ===== HEADER ===== */
 .header {
+    position: sticky;
+    top: 0;
+    z-index: 999;
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: #ffffff;
     padding: 12px 24px;
-    margin-top: 35px;
     border-bottom: 4px solid #2f80ed;
 }
 
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    padding: 8px 24px;
+    text-align: center;
+    font-size: 13px;
+    color: #666666;
+    border-top: 2px solid #2f80ed;
+    z-index: 998;
+}
 .header-left {
     display: flex;
     align-items: center;
@@ -174,7 +190,11 @@ with tab_upload:
         st.subheader("Hướng dẫn upload dữ liệu")
         st.markdown("""
             Upload file `.set`: File tín hiệu EEG
-        """)
+            <br>
+            <a href="https://drive.google.com/drive/u/5/folders/1sSq5UH64dpA8VRnsSE2GV1Oz_j46AkH4" >
+            Tải dữ liệu EEG mẫu tại đây
+            </a>
+        """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
@@ -309,7 +329,13 @@ with tab_predict:
                 st.warning("Không có model vote để ensemble.")
 
     st.markdown('</div>', unsafe_allow_html=True)
-
+# Footer
+st.markdown("""
+<div class="footer">
+    © Lê Tiến Đạt - Năng Tiến Thành <br>
+    GVHD: ThS. Dương Phi Long
+</div>
+""", unsafe_allow_html=True)
 
     
 
