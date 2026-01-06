@@ -8,9 +8,9 @@ from inference.predict import predict_with_voting
 import tempfile
 
 CLASS_MAP = {
-    "A": "Bệnh Alzheimer",
-    "F": "Sa sút trí tuệ thùy trán - thái dương",
-    "C": "Người khỏe mạnh"
+    "AD": "Bệnh Alzheimer",
+    "FTD": "Sa sút trí tuệ thùy trán - thái dương",
+    "CN": "Người khỏe mạnh"
 }
 # ================= CONFIG =================
 st.set_page_config(layout="wide")
@@ -285,9 +285,9 @@ with tab_predict:
 
             for model_name, info in result["model_votes"].items():
                 row = {"Model": model_name}
-                for cls in ["A", "F", "C"]:
+                for cls in ["AD", "FTD", "CN"]:
                     row[cls] = info["segment_counts"].get(cls, 0)
-                row["Total segments"] = sum(row[c] for c in ["A", "F", "C"])
+                row["Total segments"] = sum(row[c] for c in ["AD", "FTD", "CN"])
                 table_rows.append(row)
 
             df_segments = pd.DataFrame(table_rows)

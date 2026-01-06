@@ -3,7 +3,7 @@ import torch
 import numpy as np
 from inference.loader import load_models
 
-CLASS_MAP = {0: "A", 1: "F", 2: "C"}
+CLASS_MAP = {0: "AD", 1: "FTD", 2: "CN"}
 
 @torch.no_grad()
 def predict_with_voting(segments, model_family):
