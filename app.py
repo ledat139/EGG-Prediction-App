@@ -5,6 +5,7 @@ import pandas as pd
 from preprocess.load_eeg import load_eeg
 from visualize.visualize import plot_raw_eeg, plot_cwt_grid
 from inference.predict import predict_with_voting
+from inference.predict import predict_with_streaming_ensemble
 import tempfile
 
 CLASS_MAP = {
