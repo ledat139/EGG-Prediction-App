@@ -262,7 +262,7 @@ with tab_predict:
             segments = st.session_state.segments
 
             with st.spinner("Đang thực hiện ensemble voting..."):
-                result = predict_with_voting(segments, model_family)
+                result = predict_with_streaming_ensemble(segments, model_family)
 
             label = result["final_vote"]
             label_name = CLASS_MAP.get(label, label)
