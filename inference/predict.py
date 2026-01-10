@@ -2,6 +2,7 @@ import time
 import torch
 import numpy as np
 from inference.loader import load_models
+import gc
 
 CLASS_MAP = {0: "AD", 1: "FTD", 2: "CN"}
 
@@ -90,4 +91,15 @@ def predict_with_voting(segments, model_family):
     print("-" * 50)
 
     # 🔴 GIỮ NGUYÊN return
+    del x
+    del mean_tensor
+    del std_tensor
+    del logits
+    del model_tuples
+    del model_level_preds
+
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
+
+    gc.collect()
     return result
