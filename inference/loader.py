@@ -38,18 +38,37 @@ def load_one_model(file_path, model_family, device):
     return model, mean, std
 
 
+# def load_models(model_family, device="cpu"):
+#     """
+#     Load tất cả model trong folder, kèm mean/std
+#     Trả về list [(model, mean, std), ...]
+#     """
+#     model_dir = MODEL_DIR_MAP[model_family]
+#     model_files = sorted(f for f in os.listdir(model_dir) if f.endswith(".pth"))
+#     model_paths = [os.path.join(model_dir, f) for f in model_files]
+
+#     models = []
+#     with ThreadPoolExecutor(max_workers=len(model_paths)) as executor:
+#         results = executor.map(lambda p: load_one_model(p, model_family, device), model_paths)
+#         models = list(results)
+
+#     return models
 def load_models(model_family, device="cpu"):
-    """
-    Load tất cả model trong folder, kèm mean/std
-    Trả về list [(model, mean, std), ...]
-    """
     model_dir = MODEL_DIR_MAP[model_family]
+
+    if not os.path.exists(model_dir):
+        raise RuntimeError(f"Model directory not found: {model_dir}")
+
     model_files = sorted(f for f in os.listdir(model_dir) if f.endswith(".pth"))
-    model_paths = [os.path.join(model_dir, f) for f in model_files]
+
+    if len(model_files) == 0:
+        raise RuntimeError(f"No model files found in {model_dir}")
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     models = []
-    with ThreadPoolExecutor(max_workers=len(model_paths)) as executor:
-        results = executor.map(lambda p: load_one_model(p, model_family, device), model_paths)
-        models = list(results)
+    for f in model_files:
+        path = os.path.join(model_dir, f)
+        models.append(load_one_model(path, model_family, device))
 
     return models

@@ -8,7 +8,10 @@ CLASS_MAP = {0: "AD", 1: "FTD", 2: "CN"}
 @torch.no_grad()
 def predict_with_voting(segments, model_family):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model_tuples = load_models(model_family, device)
+    try:
+      model_tuples = load_models(model_family, device)
+    except:
+      print("An exception occurred")
 
     result = {
         "model_votes": {},
